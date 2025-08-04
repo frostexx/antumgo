@@ -14,7 +14,7 @@ lazy_static = "1.5.0"
 thiserror = "2.0.12"
 stellar-base = "0.5.0"
 serde_json = "1.0.140"
-bip39 = "1.0"
+bip39 = "1.0"  # Keep this one, remove tiny-bip39
 clap = { version = "4.5.1", features = ["derive"] }
 hex = "0.4.3"
 base64 = "0.22.1"
@@ -39,7 +39,7 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 fastrand = "2.0"
 
-# Real Pi Network integration dependencies
+# Real Pi Network integration dependencies (fixed)
 ed25519-dalek = "2.0"
-tiny-bip39 = "1.0"
 bs58 = "0.5"
+# Remove tiny-bip39 to avoid conflict - use bip39 instead

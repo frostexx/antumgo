@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use thiserror::Error;
 use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signature};
-use tiny_bip39::{Mnemonic, Seed};
+use bip39::{Mnemonic, Language, Seed}; // Use bip39 instead of tiny-bip39
 use sha2::{Digest, Sha256};
 use bs58;
 
@@ -76,18 +76,18 @@ impl PiClient {
 
         Ok(Self {
             client,
-            base_url: "https://api.mainnet.pi.network".to_string(), // Real Pi mainnet API
+            base_url: "https://api.mainnet.minepi.com".to_string(), // Real Pi mainnet API
             max_retries: 10,
         })
     }
 
-    // Convert seed phrase to Pi Network address
+    // Convert seed phrase to Pi Network address using compatible bip39
     fn seed_to_address(&self, seed_phrase: &str) -> Result<String, PiError> {
-        let mnemonic = Mnemonic::from_phrase(seed_phrase, tiny_bip39::Language::English)
+        let mnemonic = Mnemonic::parse_in_normalized(Language::English, seed_phrase)
             .map_err(|_| PiError::InvalidSeedPhrase)?;
         
         let seed = Seed::new(&mnemonic, "");
-        let secret_key = SecretKey::from_bytes(&seed.as_bytes()[..32])
+        let secret_key = SecretKey::from_bytes(seed.as_bytes()[..32].try_into().unwrap())
             .map_err(|e| PiError::Crypto(e.to_string()))?;
         
         let public_key = PublicKey::from(&secret_key);

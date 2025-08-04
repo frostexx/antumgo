@@ -237,15 +237,15 @@ pub async fn get_status(State(state): State<AppState>) -> Json<StatusResponse> {
     })
 }
 
-// Helper function to derive Pi address from seed phrase
+// Helper function to derive Pi address from seed phrase using compatible bip39
 fn derive_pi_address(seed_phrase: &str) -> Result<String, Box<dyn std::error::Error>> {
-    use tiny_bip39::{Mnemonic, Seed};
+    use bip39::{Mnemonic, Language, Seed};
     use ed25519_dalek::{PublicKey, SecretKey};
     use sha2::{Digest, Sha256};
     
-    let mnemonic = Mnemonic::from_phrase(seed_phrase, tiny_bip39::Language::English)?;
+    let mnemonic = Mnemonic::parse_in_normalized(Language::English, seed_phrase)?;
     let seed = Seed::new(&mnemonic, "");
-    let secret_key = SecretKey::from_bytes(&seed.as_bytes()[..32])?;
+    let secret_key = SecretKey::from_bytes(seed.as_bytes()[..32].try_into().unwrap())?;
     let public_key = PublicKey::from(&secret_key);
     
     let mut hasher = Sha256::new();
