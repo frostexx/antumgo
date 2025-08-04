@@ -1,18 +1,17 @@
-use governor::{Quota, RateLimiter as GovernorRateLimiter};
+use governor::{Quota, RateLimiter as GovernorRateLimiter, state::InMemoryState};
+use governor::clock::DefaultClock;
 use nonzero_ext::nonzero;
 use std::{sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 pub struct RateLimiter {
-    claiming_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, governor::InMemoryState>, governor::clock::DefaultClock>>,
-    transfer_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, governor::InMemoryState>, governor::clock::DefaultClock>>,
-    api_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, governor::InMemoryState>, governor::clock::DefaultClock>>,
+    claiming_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, InMemoryState>, DefaultClock>>,
+    transfer_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, InMemoryState>, DefaultClock>>,
+    api_limiter: Arc<GovernorRateLimiter<String, dashmap::DashMap<String, InMemoryState>, DefaultClock>>,
 }
 
 impl RateLimiter {
     pub fn new() -> Self {
-        use governor::clock::DefaultClock;
-        
         // Ultra-aggressive rate limits for maximum performance
         let claiming_quota = Quota::per_second(nonzero!(1000u32)); // 1000 claims per second
         let transfer_quota = Quota::per_second(nonzero!(500u32));  // 500 transfers per second

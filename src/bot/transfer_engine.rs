@@ -136,7 +136,6 @@ impl TransferEngine {
         use std::sync::atomic::Ordering;
         
         let mut attempts = 0;
-        let mut delay = Duration::from_millis(1);
 
         while is_active.load(Ordering::SeqCst) {
             attempts += 1;
@@ -167,7 +166,7 @@ impl TransferEngine {
                     }
 
                     // Ultra-fast retry for transfers
-                    delay = Duration::from_millis(2);
+                    let delay = Duration::from_millis(2);
 
                     let _ = log_sender.send(LogEntry {
                         timestamp: chrono::Utc::now(),

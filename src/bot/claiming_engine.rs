@@ -108,7 +108,6 @@ impl ClaimingEngine {
         worker_id: usize,
     ) -> Result<(), BotError> {
         let mut attempts = 0;
-        let mut delay = Duration::from_millis(1);
 
         loop {
             attempts += 1;
@@ -139,7 +138,7 @@ impl ClaimingEngine {
                     }
 
                     // Adaptive delay based on error type
-                    delay = match e.to_string().as_str() {
+                    let delay = match e.to_string().as_str() {
                         s if s.contains("rate limit") => Duration::from_millis(50),
                         s if s.contains("network") => Duration::from_millis(10),
                         _ => Duration::from_millis(5),
