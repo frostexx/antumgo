@@ -1,0 +1,249 @@
+                    particle.className = 'quantum-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = '100%';
+                    particle.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    container.appendChild(particle);
+
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 5000);
+                }
+            }, 100);
+        }
+
+        function startAnalyticsUpdates() {
+            setInterval(() => {
+                // Simulate real-time analytics updates
+                updateAnalyticsValues();
+            }, 1000);
+        }
+
+        function updateAnalyticsValues() {
+            // Update AI accuracy with slight variations
+            const accuracy = 99.9 + (Math.random() - 0.5) * 0.2;
+            document.getElementById('aiAccuracy').textContent = accuracy.toFixed(1) + '%';
+            
+            // Pulse supremacy level
+            const supremacyElement = document.getElementById('supremacyLevel');
+            if (supremacyElement) {
+                supremacyElement.style.color = `hsl(${Math.random() * 60 + 300}, 70%, 60%)`;
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        document.getElementById('loginTab')?.click();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        document.getElementById('withdrawTab')?.click();
+                        break;
+                    case 'q':
+                        e.preventDefault();
+                        const checkbox = document.getElementById('quantumMode');
+                        if (checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                        break;
+                }
+            }
+        });
+
+        // Add quantum effects to form interactions
+        document.addEventListener('focus', function(e) {
+            if (e.target.matches('input, textarea, select')) {
+                e.target.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.5)';
+            }
+        }, true);
+
+        document.addEventListener('blur', function(e) {
+            if (e.target.matches('input, textarea, select')) {
+                e.target.style.boxShadow = '';
+            }
+        }, true);
+    </script>
+
+    <style>
+        /* Additional CSS for quantum effects */
+        .quantum-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .quantum-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: particleFloat 4s linear forwards;
+        }
+
+        @keyframes particleFloat {
+            from {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .neural-network {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #7b68ee;
+            border-radius: 50%;
+            animation: neuralPulse 2s ease-in-out infinite;
+        }
+
+        .neural-connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #7b68ee, transparent);
+            animation: neuralFlow 3s ease-in-out infinite;
+        }
+
+        @keyframes neuralPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes neuralFlow {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
+        }
+
+        .analytics-dashboard {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            border: 1px solid rgba(123, 104, 238, 0.3);
+        }
+
+        .analytics-dashboard h3 {
+            font-family: 'Orbitron', monospace;
+            color: var(--quantum-accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .analytic-card {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .analytic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .analytic-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: var(--quantum-primary);
+            font-weight: 600;
+        }
+
+        .analytic-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--quantum-success);
+            margin-bottom: 5px;
+            animation: valueGlow 2s ease-in-out infinite;
+        }
+
+        .analytic-label {
+            color: var(--quantum-light);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .log-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .log-controls .quantum-btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .log-time {
+            color: var(--quantum-accent);
+            font-family: 'Courier New', monospace;
+            margin-right: 10px;
+        }
+
+        .log-message {
+            color: var(--quantum-light);
+        }
+
+        /* Scrollbar styling */
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: var(--quantum-primary);
+            border-radius: 4px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: var(--quantum-accent);
+        }
+    </style>
+</body>
+</html>
