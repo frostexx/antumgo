@@ -2,13 +2,13 @@
 name = "pi-sweeper-bot-pro"
 version = "1.0.0"
 edition = "2021"
-authors = ["Your Name"]
+authors = ["orbmash"]
 description = "High-performance Pi Sweeper Bot"
 
 [dependencies]
 # Backend
 tokio = { version = "1", features = ["full"] }
-warp = { version = "0.3", features = ["tls"] }
+warp = "0.3"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -18,23 +18,29 @@ anyhow = "1.0"
 log = "0.4"
 env_logger = "0.9"
 futures-util = "0.3"
-stellar-horizon = "0.26.1"
-base64 = "0.13.0"
+stellar-sdk = { version = "0.8.0", features = ["all"] } # Corrected Stellar SDK
+base64 = "0.21.0"
+rand = "0.8"
+tokio-tungstenite = "0.17"
+url = "2.2"
 
 # Frontend
-yew = { version = "0.20" }
+yew = "0.20"
 yew-router = "0.17"
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = [
   "HtmlInputElement",
   "WebSocket",
   "MessageEvent",
   "ErrorEvent",
   "CloseEvent",
+  "HtmlSelectElement",
 ] }
 gloo-net = "0.2"
 gloo-console = "0.2"
 gloo-timers = { version = "0.2", features = ["futures"] }
+gloo-storage = "0.2"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
