@@ -1,43 +1,47 @@
 [package]
 name = "pi_network"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
-description = "Rust client for Pi Network integration"
-authors = ["Your Name <your.email@example.com>"]
+description = "High-performance Rust client for Pi Network integration"
+authors = ["Pi Sweeper Bot Ultimate Team"]
 
 [dependencies]
-# HTTP client
-reqwest = { version = "0.11", features = ["json"] }
+# HTTP client with connection pooling
+reqwest = { version = "0.11", features = ["json", "stream", "rustls-tls"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-
-
-# Stellar SDK - use a specific version that matches your requirements
+# Stellar SDK
 stellar_sdk = "0.1.4"
 stellar-base = "0.5.0"
-
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 
-# Utilities
-regex = "1.5"
-thiserror = "1.0"
-anyhow = "1.0"  # Added missing dependency
-lazy_static = "1.5.0"
-bip39 = "1.0"
+# Cryptography
 hmac = "0.12"
 sha2 = "0.10"
 hex = "0.4"
+base64 = "0.22"
+
+# Utilities
+regex = "1.5"
+thiserror = "2.0"
+anyhow = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Performance
+dashmap = "5.4"
+parking_lot = "0.12"
+governor = "0.6"
+nonzero_ext = "0.3"
+
+# Logging
+tracing = "0.1"
 
 [lib]
 name = "pi_network"
 path = "src/lib.rs"
-
-[[bin]]
-name = "pi_network_example"
-path = "src/main.rs"
-required-features = []

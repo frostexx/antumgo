@@ -1,46 +1,38 @@
 [package]
-name = "pi-sweeper-bot-pro"
-version = "1.0.0"
+name = "pi_sweeper_bot_ultimate"
+version = "2.0.0"
 edition = "2021"
-authors = ["orbmash"]
-description = "High-performance Pi Sweeper Bot"
 
 [dependencies]
-# Backend
+# Core dependencies from pi-sweeper-bot-3S (maintaining compatibility)
+hmac = "0.12"
+sha2 = "0.10"
+stellar_sdk = "0.1.4"
+pi_network = { path = "./pi_network" }
 tokio = { version = "1", features = ["full"] }
-warp = "0.3"
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-thiserror = "1.0"
-anyhow = "1.0"
-log = "0.4"
-env_logger = "0.9"
+lazy_static = "1.5.0"
+thiserror = "2.0.12"
+stellar-base = "0.5.0"
+serde_json = "1.0.140"
+bip39 = "1.0"
+clap = { version = "4.5.1", features = ["derive"] }
+hex = "0.4.3"
+base64 = "0.22.1"
+
+# Enhanced dependencies (additions for superior performance)
+tokio-tungstenite = "0.20"
 futures-util = "0.3"
-stellar-sdk = { version = "0.8.0", features = ["all"] } # Corrected Stellar SDK
-base64 = "0.21.0"
-rand = "0.8"
-tokio-tungstenite = "0.17"
-url = "2.2"
-
-# Frontend
-yew = "0.20"
-yew-router = "0.17"
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = [
-  "HtmlInputElement",
-  "WebSocket",
-  "MessageEvent",
-  "ErrorEvent",
-  "CloseEvent",
-  "HtmlSelectElement",
-] }
-gloo-net = "0.2"
-gloo-console = "0.2"
-gloo-timers = { version = "0.2", features = ["futures"] }
-gloo-storage = "0.2"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
+reqwest = { version = "0.11", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+dashmap = "5.4"
+parking_lot = "0.12"
+governor = "0.6"
+nonzero_ext = "0.3"
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"

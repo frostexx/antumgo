@@ -1,134 +1,56 @@
-use stellar_sdk::Keypair;
-use stellar_base::network::Network;
-use thiserror::Error;
-use std::fmt;
+//! Pi Sweeper Bot Ultimate
+//! 
+//! A high-performance, multi-threaded Pi Network sweeper bot designed to outperform
+//! all competitors through advanced concurrency, optimal fee strategies, and
+//! intelligent network protection.
 
-#[derive(Debug, Error)]
-pub enum PiNetworkError {
-    #[error("Network error: {0}")]
-    NetworkError(String),
-    
-    #[error("Authentication error: {0}")]
-    AuthError(String),
-    
-    #[error("Transaction error: {0}")]
-    TransactionError(String),
-    
-    #[error("Initialization error: {0}")]
-    InitError(String),
+pub mod api;
+pub mod bot;
+pub mod models;
+pub mod utils;
+
+pub use api::*;
+pub use bot::*;
+pub use models::*;
+pub use utils::*;
+
+use std::sync::{atomic::AtomicBool, Arc};
+use dashmap::DashMap;
+use parking_lot::RwLock;
+use tokio::sync::broadcast;
+use chrono::{DateTime, Utc};
+
+/// Main application state shared across all components
+#[derive(Clone)]
+pub struct AppState {
+    pub active_sessions: Arc<DashMap<String, WalletSession>>,
+    pub claiming_engine: Arc<ClaimingEngine>,
+    pub transfer_engine: Arc<TransferEngine>,
+    pub rate_limiter: Arc<RateLimiter>,
+    pub log_sender: broadcast::Sender<LogEntry>,
+    pub is_claiming_active: Arc<AtomicBool>,
+    pub is_transfer_active: Arc<AtomicBool>,
+    pub server_time: Arc<RwLock<DateTime<Utc>>>,
 }
 
-impl From<String> for PiNetworkError {
-    fn from(error: String) -> Self {
-        PiNetworkError::NetworkError(error)
-    }
+/// Bot configuration for optimal performance
+#[derive(Debug, Clone)]
+pub struct BotConfig {
+    pub max_concurrent_claims: usize,
+    pub max_concurrent_transfers: usize,
+    pub aggressive_mode: bool,
+    pub fee_optimization_enabled: bool,
+    pub network_protection_enabled: bool,
 }
 
-// This lets us use ? with string errors
-impl From<&str> for PiNetworkError {
-    fn from(error: &str) -> Self {
-        PiNetworkError::NetworkError(error.to_string())
-    }
-}
-
-pub struct PiNetwork {
-    api_key: Option<String>,
-    keypair: Option<Keypair>,
-    network: Option<Network>,
-    initialized: bool,
-    transaction_count: u32,
-}
-
-impl PiNetwork {
-    pub fn new() -> Self {
-        PiNetwork {
-            api_key: None,
-            keypair: None,
-            network: None,
-            initialized: false,
-            transaction_count: 0,
-        }
-    }
-    
-    pub async fn initialize(&mut self, api_key: &str, secret_key: &str, network_passphrase: &str) -> Result<(), PiNetworkError> {
-        // Store API key
-        self.api_key = Some(api_key.to_string());
-        
-        // Create network from passphrase
-        self.network = Some(Network::new(network_passphrase.to_string()));
-        
-        // Store keypair from secret key
-        // In a real implementation, we would parse the secret key and create a Keypair
-        // But for this example, we'll just pretend it worked
-        self.keypair = Some(Keypair::random().unwrap());
-        
-        self.initialized = true;
-        
-        println!("Pi Network client initialized successfully with API key: {}...", 
-                 api_key.chars().take(10).collect::<String>());
-        
-        Ok(())
-    }
-    
-    // Get current balance - placeholder implementation
-    pub fn get_balance(&self) -> String {
-        // In a real implementation, this would query the Pi Network API
-        // For example purposes, we just return a static value
-        "0.5 Pi".to_string()
-    }
-    
-    // Send transaction - placeholder implementation 
-    pub async fn send_transaction(&mut self) -> Result<String, PiNetworkError> {
-        // In a real implementation, this would create and submit a transaction
-        // For this example, we'll simulate some transactions failing and succeeding randomly
-        
-        if !self.initialized {
-            return Err(PiNetworkError::InitError("Client not initialized".to_string()));
-        }
-        
-        self.transaction_count += 1;
-        
-        // Simulate some transactions failing with various errors
-        match self.transaction_count % 5 {
-            0 => Ok(format!("TRANSACTION_HASH_{}", self.transaction_count)),
-            1 => Err(PiNetworkError::NetworkError("Network timeout".to_string())),
-            2 => Err(PiNetworkError::TransactionError("Account locked".to_string())),
-            3 => Err(PiNetworkError::TransactionError("Insufficient funds".to_string())),
-            _ => Ok(format!("TRANSACTION_HASH_{}", self.transaction_count)), // Most attempts succeed
-        }
-    }
-}
-
-impl fmt::Debug for PiNetwork {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("PiNetwork")
-            .field("initialized", &self.initialized)
-            .field("api_key", &self.api_key.as_ref().map(|k| format!("{}...", &k[0..5])))
-            .field("transaction_count", &self.transaction_count)
-            .finish()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[tokio::test]
-    async fn test_initialization() {
-        let mut client = PiNetwork::new();
-        let result = client.initialize("test_api_key", "secret", "Test Network").await;
-        assert!(result.is_ok());
-        assert!(client.initialized);
-    }
-    
-    #[tokio::test]
-    async fn test_send_transaction() {
-        let mut client = PiNetwork::new();
-        client.initialize("test_api_key", "secret", "Test Network").await.unwrap();
-        
-        // Send a few transactions to test success/failure patterns
-        for _ in 0..10 {
-            let _ = client.send_transaction().await;
+impl Default for BotConfig {
+    fn default() -> Self {
+        Self {
+            max_concurrent_claims: 100,
+            max_concurrent_transfers: 50,
+            aggressive_mode: true,
+            fee_optimization_enabled: true,
+            network_protection_enabled: true,
         }
     }
 }

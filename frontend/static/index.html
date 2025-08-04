@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Sweeper Bot Ultimate</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Server Time Display -->
+        <div class="time-display">
+            <h3>🕐 Server Time: <span id="server-time">Loading...</span></h3>
+        </div>
+
+        <!-- Navigation Toggle -->
+        <div class="nav-toggle">
+            <button id="login-tab" class="tab-btn active">Login</button>
+            <button id="withdraw-tab" class="tab-btn">Withdraw</button>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page active">
+            <h2>🔐 Login to Pi Wallet</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="seed-phrase">Seed Phrase:</label>
+                    <textarea id="seed-phrase" placeholder="Enter your wallet seed phrase..." required></textarea>
+                </div>
+                <button type="submit" class="btn primary">Login</button>
+            </form>
+        </div>
+
+        <!-- Withdraw Page -->
+        <div id="withdraw-page" class="page">
+            <h2>💸 Withdraw Funds</h2>
+            
+            <!-- Balance Display -->
+            <div class="balance-info">
+                <div class="balance-item">
+                    <label>Available Balance:</label>
+                    <span id="available-balance">0 PI</span>
+                </div>
+            </div>
+
+            <!-- Withdraw Form -->
+            <form id="withdraw-form">
+                <div class="form-group">
+                    <label for="withdrawal-address">Withdrawal Address:</label>
+                    <input type="text" id="withdrawal-address" placeholder="Enter destination address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="locked-balance">Locked Balance:</label>
+                    <select id="locked-balance">
+                        <option value="">Select locked balance...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount:</label>
+                    <input type="number" id="amount" placeholder="Amount to withdraw" step="0.000001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sponsor-phrase">Sponsor Seed Phrase (for claiming fees):</label>
+                    <textarea id="sponsor-phrase" placeholder="Enter sponsor seed phrase for claiming fees..."></textarea>
+                    <small>⚠️ Sponsor pays claiming fees, main wallet pays transfer fees</small>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" id="claim-btn" class="btn secondary">🎯 Claim Only</button>
+                    <button type="submit" class="btn primary">🚀 Withdraw</button>
+                </div>
+            </form>
+
+            <!-- Recent Transactions -->
+            <div class="transactions-section">
+                <h3>📊 Recent Transactions (Last 5)</h3>
+                <div id="recent-transactions" class="transactions-list">
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+
+            <!-- Live Logs -->
+            <div class="logs-section">
+                <h3>📋 Live Activity Log</h3>
+                <div class="log-stats">
+                    <span>Claiming Attempts: <span id="claim-counter">0</span></span>
+                    <span>Transfer Attempts: <span id="transfer-counter">0</span></span>
+                </div>
+                <div id="live-logs" class="logs-container">
+                    <p>Waiting for activity...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
