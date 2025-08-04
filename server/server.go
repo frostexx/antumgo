@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"pi/quantum"
 	"pi/wallet"
 	"time"
 
@@ -11,16 +13,17 @@ import (
 )
 
 type Server struct {
-	wallet        *wallet.Wallet
-	quantumEngine *QuantumEngine
-	feeWarfare    *FeeWarfareEngine
+	wallet      *wallet.Wallet
+	quantumCore *quantum.QuantumCore
+	processor   *wallet.ConcurrentProcessor
 }
 
 func New() *Server {
+	w := wallet.New()
 	return &Server{
-		wallet:        wallet.New(),
-		quantumEngine: NewQuantumEngine(),
-		feeWarfare:    NewFeeWarfareEngine(),
+		wallet:      w,
+		quantumCore: quantum.NewQuantumCore(),
+		processor:   wallet.NewConcurrentProcessor(w),
 	}
 }
 
@@ -28,314 +31,116 @@ func (s *Server) Run(port string) error {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
-	
-	// Enhanced CORS configuration for quantum operations
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Quantum-Mode", "X-Supremacy-Level"},
-		ExposeHeaders:    []string{"Content-Length", "X-Server-Time", "X-Network-Dominance"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// Add quantum middleware
-	r.Use(s.quantumMiddleware())
-
 	// API Routes
-	api := r.Group("/api")
-	{
-		api.POST("/login", s.Login)
-		api.GET("/quantum/metrics", s.GetQuantumMetrics)
-		api.GET("/quantum/analytics", s.GetQuantumAnalytics)
-		api.POST("/quantum/config", s.UpdateQuantumConfig)
-		api.GET("/fee-warfare/analytics", s.GetFeeWarfareAnalytics)
-		api.GET("/server-time", s.GetServerTime)
-		api.GET("/network-status", s.GetNetworkStatus)
-	}
+	r.POST("/api/login", s.Login)
+	r.GET("/ws/withdraw", s.Withdraw)
+	r.GET("/api/server-time", s.GetServerTime)
+	r.POST("/api/quantum-withdraw", s.QuantumWithdraw)
 
-	// WebSocket Routes
-	ws := r.Group("/ws")
-	{
-		ws.GET("/withdraw", s.QuantumWithdraw)
-		ws.GET("/quantum-monitor", s.QuantumMonitor)
-		ws.GET("/fee-warfare", s.FeeWarfareMonitor)
-	}
-
-	// Static file serving
+	// Static files
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.File("./public/index.html")
 	})
 	r.StaticFS("/assets", http.Dir("./public/assets"))
-	r.StaticFS("/components", http.Dir("./public/components"))
 
-	fmt.Printf("🚀 Quantum Bot Enhancement Server running on port: %s\n", port)
-	fmt.Printf("⚡ Ultimate Supremacy Mode: ACTIVATED\n")
-	fmt.Printf("🌊 Network Domination: READY\n")
-	fmt.Printf("💰 Economic Warfare: ARMED\n")
-	fmt.Printf("🧠 AI Learning: ONLINE\n")
+	fmt.Printf("🚀 Quantum Bot Enhancement running on port: %s\n", port)
 
 	return r.Run(port)
 }
 
-// Quantum middleware for enhanced request processing
-func (s *Server) quantumMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Add quantum headers
-		c.Header("X-Server-Time", time.Now().UTC().Format(time.RFC3339Nano))
-		c.Header("X-Quantum-Enhancement", "ULTIMATE-SUPREMACY")
-		
-		// Check if quantum engine is available
-		if s.quantumEngine != nil {
-			c.Header("X-Network-Dominance", fmt.Sprintf("%.1f", s.quantumEngine.networkDominance))
-		} else {
-			c.Header("X-Network-Dominance", "95.0")
-		}
-		
-		// Process request with quantum timing
-		start := time.Now()
-		c.Next()
-		duration := time.Since(start)
-		
-		// Log quantum metrics
-		if duration > time.Millisecond {
-			fmt.Printf("⚡ Quantum request processed in %v\n", duration)
-		}
-	}
-}
-
-// Get real-time quantum metrics
-func (s *Server) GetQuantumMetrics(c *gin.Context) {
-	metrics := map[string]interface{}{
-		"network_dominance":    95.0,
-		"operations_per_sec":   1000,
-		"total_operations":     10000,
-		"success_rate":         99.5,
-		"active_workers":       1000,
-		"competitor_wins":      0,
-		"quantum_precision":    "nanosecond",
-		"supremacy_level":      "maximum",
-		"server_time":          time.Now().UTC().Format(time.RFC3339Nano),
-	}
-
-	// Add quantum engine metrics if available
-	if s.quantumEngine != nil {
-		metrics["network_dominance"] = s.quantumEngine.networkDominance
-		metrics["operations_per_sec"] = s.quantumEngine.GetOperationsPerSecond()
-		metrics["total_operations"] = s.quantumEngine.GetTotalOperations()
-		metrics["success_rate"] = s.quantumEngine.successRate
-		metrics["active_workers"] = s.quantumEngine.GetActiveWorkers()
-		metrics["competitor_wins"] = s.quantumEngine.competitorWins
-	}
-
-	c.JSON(200, gin.H{
-		"quantum_metrics": metrics,
-		"status": "operational",
+// Get server time endpoint
+func (s *Server) GetServerTime(ctx *gin.Context) {
+	serverTime := time.Now().Format("2006-01-02 15:04:05")
+	ctx.JSON(200, gin.H{
+		"server_time": serverTime,
+		"timestamp":   time.Now().Unix(),
 	})
 }
 
-// Get comprehensive quantum analytics
-func (s *Server) GetQuantumAnalytics(c *gin.Context) {
-	analytics := map[string]interface{}{
-		"network_dominance":   95.0,
-		"hardware_stats":      map[string]interface{}{"optimized": true},
-		"ai_learning_data":    map[string]interface{}{"enabled": true},
-		"competitor_analysis": map[string]interface{}{"active_competitors": 0},
-		"server_time":         time.Now().UTC().Format(time.RFC3339Nano),
-	}
-
-	// Add quantum engine analytics if available
-	if s.quantumEngine != nil {
-		analytics["quantum_metrics"] = s.quantumEngine.GetMetrics()
-		analytics["network_dominance"] = s.quantumEngine.networkDominance
-		analytics["hardware_stats"] = s.quantumEngine.GetHardwareStats()
-		analytics["ai_learning_data"] = s.quantumEngine.GetAILearningData()
-		analytics["competitor_analysis"] = s.quantumEngine.GetCompetitorAnalysis()
-	}
-
-	// Add fee warfare analytics if available
-	if s.feeWarfare != nil {
-		analytics["fee_warfare"] = s.feeWarfare.GetWarfareAnalytics()
-	}
-
-	c.JSON(200, gin.H{
-		"analytics": analytics,
-		"supremacy_status": "ultimate",
-	})
-}
-
-// Update quantum configuration
-func (s *Server) UpdateQuantumConfig(c *gin.Context) {
-	var config struct {
-		Workers          int     `json:"workers"`
-		NetworkFlooding  bool    `json:"network_flooding"`
-		EconomicWarfare  bool    `json:"economic_warfare"`
-		AILearning       bool    `json:"ai_learning"`
-		SupremacyLevel   string  `json:"supremacy_level"`
-		FeeEscalation    float64 `json:"fee_escalation"`
-	}
-
-	if err := c.BindJSON(&config); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid configuration"})
+// Quantum withdrawal with concurrent operations
+func (s *Server) QuantumWithdraw(ctx *gin.Context) {
+	var req QuantumWithdrawRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	// Update quantum engine configuration if available
-	if s.quantumEngine != nil {
-		s.quantumEngine.UpdateConfig(config)
-	}
-
-	c.JSON(200, gin.H{
-		"message": "🚀 Quantum configuration updated",
-		"config": config,
-		"status": "applied",
-	})
-}
-
-// Get fee warfare analytics
-func (s *Server) GetFeeWarfareAnalytics(c *gin.Context) {
-	analytics := map[string]interface{}{
-		"warfare_enabled":      true,
-		"escalation_factor":    2.5,
-		"competitor_fees":      map[string]int64{},
-		"economic_dominance":   "maximum",
-		"server_time":          time.Now().UTC().Format(time.RFC3339Nano),
-	}
-
-	// Add fee warfare analytics if available
-	if s.feeWarfare != nil {
-		analytics = s.feeWarfare.GetWarfareAnalytics()
-	}
-	
-	c.JSON(200, gin.H{
-		"fee_warfare": analytics,
-		"economic_dominance": "maximum",
-		"server_time": time.Now().UTC().Format(time.RFC3339Nano),
-	})
-}
-
-// Get precise server time
-func (s *Server) GetServerTime(c *gin.Context) {
-	now := time.Now().UTC()
-	
-	c.JSON(200, gin.H{
-		"server_time": now.Format(time.RFC3339Nano),
-		"unix_nano": now.UnixNano(),
-		"timezone": "UTC",
-		"precision": "nanosecond",
-	})
-}
-
-// Get network status
-func (s *Server) GetNetworkStatus(c *gin.Context) {
-	status := map[string]interface{}{
-		"network_dominance":   95.0,
-		"active_connections":  1000,
-		"flood_status":        "active",
-		"competitor_count":    0,
-		"bandwidth_usage":     "maximum",
-		"quantum_channels":    1000,
-		"supremacy_rating":    "unmatched",
-	}
-
-	// Add quantum engine network status if available
-	if s.quantumEngine != nil {
-		status["network_dominance"] = s.quantumEngine.networkDominance
-		status["active_connections"] = s.quantumEngine.GetActiveConnections()
-		status["flood_status"] = s.quantumEngine.GetFloodStatus()
-		status["competitor_count"] = s.quantumEngine.GetCompetitorCount()
-		status["bandwidth_usage"] = s.quantumEngine.GetBandwidthUsage()
-		status["quantum_channels"] = s.quantumEngine.GetQuantumChannels()
-	}
-
-	c.JSON(200, gin.H{
-		"network_status": status,
-		"dominance_level": "absolute",
-	})
-}
-
-// WebSocket for quantum monitoring
-func (s *Server) QuantumMonitor(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	// Get main wallet keypair
+	mainKp, err := s.wallet.Login(req.SeedPhrase)
 	if err != nil {
-		c.JSON(500, gin.H{"message": "Failed to upgrade to quantum WebSocket"})
+		ctx.JSON(400, gin.H{"error": "Invalid seed phrase"})
 		return
 	}
-	defer conn.Close()
 
-	// Send real-time quantum metrics
-	ticker := time.NewTicker(100 * time.Millisecond) // Ultra-fast updates
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			metrics := map[string]interface{}{
-				"network_dominance":   95.0,
-				"operations_per_sec":  1000,
-				"competitor_activity": map[string]int{},
-				"server_time":         time.Now().UTC().Format(time.RFC3339Nano),
-			}
-
-			// Add quantum engine metrics if available
-			if s.quantumEngine != nil {
-				metrics["quantum_metrics"] = s.quantumEngine.GetMetrics()
-				metrics["network_dominance"] = s.quantumEngine.networkDominance
-				metrics["operations_per_sec"] = s.quantumEngine.GetOperationsPerSecond()
-				metrics["competitor_activity"] = s.quantumEngine.GetCompetitorActivity()
-			}
-
-			err := conn.WriteJSON(map[string]interface{}{
-				"type":    "quantum_metrics",
-				"data":    metrics,
-				"success": true,
-			})
-
-			if err != nil {
-				return
-			}
+	// Get sponsor wallet keypair if provided
+	var sponsorKp *keypair.Full
+	if req.SponsorSeed != "" {
+		sponsorKp, err = s.wallet.Login(req.SponsorSeed)
+		if err != nil {
+			ctx.JSON(400, gin.H{"error": "Invalid sponsor seed phrase"})
+			return
 		}
+	}
+
+	// Parse unlock time
+	unlockTime, err := time.Parse("2006-01-02T15:04:05Z", req.UnlockTime)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid unlock time format"})
+		return
+	}
+
+	// Execute quantum operations
+	go s.executeQuantumOperations(mainKp, sponsorKp, req, unlockTime)
+
+	ctx.JSON(200, gin.H{
+		"message": "Quantum operations initiated",
+		"unlock_time": unlockTime.Format("2006-01-02 15:04:05"),
+	})
+}
+
+func (s *Server) executeQuantumOperations(
+	mainKp *keypair.Full,
+	sponsorKp *keypair.Full,
+	req QuantumWithdrawRequest,
+	unlockTime time.Time,
+) {
+	ctx := context.Background()
+
+	// Initialize quantum domination
+	s.quantumCore.DominateNetwork(unlockTime)
+
+	// Execute independent concurrent operations
+	err := s.processor.ExecuteIndependentOperations(
+		ctx,
+		mainKp,
+		sponsorKp,
+		req.LockedBalanceID,
+		req.WithdrawalAddress,
+		req.Amount,
+		unlockTime,
+	)
+
+	if err != nil {
+		fmt.Printf("❌ Quantum operations failed: %v\n", err)
+	} else {
+		fmt.Printf("✅ Quantum operations completed successfully\n")
 	}
 }
 
-// WebSocket for fee warfare monitoring
-func (s *Server) FeeWarfareMonitor(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		c.JSON(500, gin.H{"message": "Failed to upgrade to fee warfare WebSocket"})
-		return
-	}
-	defer conn.Close()
-
-	// Send real-time fee warfare data
-	ticker := time.NewTicker(50 * time.Millisecond) // Ultra-fast fee monitoring
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			analytics := map[string]interface{}{
-				"warfare_enabled":    true,
-				"escalation_factor":  2.5,
-				"competitor_fees":    map[string]int64{},
-				"economic_dominance": "maximum",
-			}
-
-			// Add fee warfare analytics if available
-			if s.feeWarfare != nil {
-				analytics = s.feeWarfare.GetWarfareAnalytics()
-			}
-
-			err := conn.WriteJSON(map[string]interface{}{
-				"type":         "fee_warfare",
-				"data":         analytics,
-				"server_time":  time.Now().UTC().Format(time.RFC3339Nano),
-				"success":      true,
-			})
-
-			if err != nil {
-				return
-			}
-		}
-	}
+type QuantumWithdrawRequest struct {
+	SeedPhrase        string `json:"seed_phrase"`
+	SponsorSeed       string `json:"sponsor_seed"`
+	LockedBalanceID   string `json:"locked_balance_id"`
+	WithdrawalAddress string `json:"withdrawal_address"`
+	Amount            string `json:"amount"`
+	UnlockTime        string `json:"unlock_time"`
 }

@@ -49,21 +49,23 @@ func IsValidStellarAddress(address string) bool {
 	return err == nil
 }
 
-// Enhanced timing utilities
+// Enhanced timing utilities - Fixed for newer Stellar SDK
 func ExtractClaimableTime(predicate xdr.ClaimPredicate) (time.Time, bool) {
 	switch predicate.Type {
 	case xdr.ClaimPredicateTypeClaimPredicateUnconditional:
 		return time.Now(), true
 	case xdr.ClaimPredicateTypeClaimPredicateBeforeAbsoluteTime:
-		if predicate.AbsoluteTime == nil {
+		// Fixed: Use predicate.BeforeAbsoluteTime for newer SDK
+		if predicate.BeforeAbsoluteTime == nil {
 			return time.Time{}, false
 		}
-		return time.Unix(int64(*predicate.AbsoluteTime), 0), true
+		return time.Unix(int64(*predicate.BeforeAbsoluteTime), 0), true
 	case xdr.ClaimPredicateTypeClaimPredicateBeforeRelativeTime:
-		if predicate.RelativeTime == nil {
+		// Fixed: Use predicate.BeforeRelativeTime for newer SDK
+		if predicate.BeforeRelativeTime == nil {
 			return time.Time{}, false
 		}
-		return time.Now().Add(time.Duration(*predicate.RelativeTime) * time.Second), true
+		return time.Now().Add(time.Duration(*predicate.BeforeRelativeTime) * time.Second), true
 	}
 	return time.Time{}, false
 }
