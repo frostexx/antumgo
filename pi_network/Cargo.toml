@@ -2,46 +2,29 @@
 name = "pi_network"
 version = "2.0.0"
 edition = "2021"
-description = "High-performance Rust client for Pi Network integration"
-authors = ["Pi Sweeper Bot Ultimate Team"]
+description = "Real Pi Network mainnet client"
 
 [dependencies]
-# HTTP client with connection pooling
 reqwest = { version = "0.11", features = ["json", "stream", "rustls-tls"] }
-
-# Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# Stellar SDK
 stellar_sdk = "0.1.4"
 stellar-base = "0.5.0"
-
-# Async runtime
 tokio = { version = "1", features = ["full"] }
-
-# Cryptography
 hmac = "0.12"
 sha2 = "0.10"
 hex = "0.4"
 base64 = "0.22"
-
-# Utilities
 regex = "1.5"
 thiserror = "2.0"
 anyhow = "1.0"
 uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
-
-# Performance
 dashmap = "5.4"
 parking_lot = "0.12"
-governor = "0.6"
-nonzero_ext = "0.3"
-
-# Logging
 tracing = "0.1"
 
-[lib]
-name = "pi_network"
-path = "src/lib.rs"
+# Real crypto dependencies
+ed25519-dalek = "2.0"
+tiny-bip39 = "1.0"
+bs58 = "0.5"

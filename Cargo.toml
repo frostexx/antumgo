@@ -21,7 +21,7 @@ base64 = "0.22.1"
 
 # Enhanced dependencies (additions for superior performance)
 tokio-tungstenite = "0.20"
-tokio-stream = { version = "0.1", features = ["sync"] }  # ADDED sync feature
+tokio-stream = { version = "0.1", features = ["sync"] }
 futures-util = "0.3"
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -29,7 +29,7 @@ uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 dashmap = "5.4"
 parking_lot = "0.12"
-governor = { version = "0.6", features = ["dashmap", "std"] }  # ADDED features
+governor = { version = "0.6", features = ["dashmap", "std"] }
 nonzero_ext = "0.3"
 axum = "0.7"
 tower = "0.4"
@@ -37,4 +37,9 @@ tower-http = { version = "0.5", features = ["cors", "fs"] }
 anyhow = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
-fastrand = "2.0"  # ADDED missing dependency
+fastrand = "2.0"
+
+# Real Pi Network integration dependencies
+ed25519-dalek = "2.0"
+tiny-bip39 = "1.0"
+bs58 = "0.5"
