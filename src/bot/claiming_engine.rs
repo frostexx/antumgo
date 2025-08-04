@@ -4,7 +4,7 @@ use std::{
 };
 use tokio::{sync::broadcast, time::sleep};
 use tracing::{error, info, warn};
-use pi_network::{PiClient, WalletManager};
+use pi_network::PiClient;
 use crate::{models::types::*, utils::retry::RetryStrategy};
 
 pub struct ClaimingEngine {
@@ -15,9 +15,9 @@ pub struct ClaimingEngine {
 }
 
 impl ClaimingEngine {
-    pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new() -> Result<Self, BotError> {
         Ok(Self {
-            client: Arc::new(PiClient::new().await?),
+            client: Arc::new(PiClient::new().await.map_err(|e| BotError::Network(e.to_string()))?),
             retry_config: RetryStrategy::exponential_backoff(
                 Duration::from_millis(10), // Start with 10ms
                 Duration::from_millis(100), // Max 100ms
@@ -33,7 +33,7 @@ impl ClaimingEngine {
         wallet_seed: String,
         sponsor_seed: String,
         log_sender: broadcast::Sender<LogEntry>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), BotError> {
         let start_time = Instant::now();
         info!("🎯 Starting aggressive claiming with sponsor fee payment");
 
@@ -106,7 +106,7 @@ impl ClaimingEngine {
         log_sender: broadcast::Sender<LogEntry>,
         retry_config: RetryStrategy,
         worker_id: usize,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), BotError> {
         let mut attempts = 0;
         let mut delay = Duration::from_millis(1);
 
@@ -135,7 +135,7 @@ impl ClaimingEngine {
                             level: "ERROR".to_string(),
                             message: format!("❌ Worker {} - Max attempts reached: {}", worker_id, e),
                         });
-                        return Err(e.into());
+                        return Err(BotError::Api(e.to_string()));
                     }
 
                     // Adaptive delay based on error type

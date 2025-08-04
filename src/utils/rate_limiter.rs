@@ -1,6 +1,6 @@
 use governor::{Quota, RateLimiter as GovernorRateLimiter};
 use nonzero_ext::nonzero;
-use std::{num::NonZeroU32, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 use tokio::time::sleep;
 
 pub struct RateLimiter {
@@ -12,7 +12,6 @@ pub struct RateLimiter {
 impl RateLimiter {
     pub fn new() -> Self {
         use governor::clock::DefaultClock;
-        use governor::state::{InMemoryState, keyed::DashMapStateStore};
         
         // Ultra-aggressive rate limits for maximum performance
         let claiming_quota = Quota::per_second(nonzero!(1000u32)); // 1000 claims per second

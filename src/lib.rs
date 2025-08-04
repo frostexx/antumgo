@@ -11,7 +11,6 @@ pub mod utils;
 
 pub use api::*;
 pub use bot::*;
-pub use models::*;
 pub use utils::*;
 
 use std::sync::{atomic::AtomicBool, Arc};
@@ -19,6 +18,7 @@ use dashmap::DashMap;
 use parking_lot::RwLock;
 use tokio::sync::broadcast;
 use chrono::{DateTime, Utc};
+use crate::models::types::*;
 
 /// Main application state shared across all components
 #[derive(Clone)]

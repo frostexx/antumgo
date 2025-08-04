@@ -73,3 +73,23 @@ pub struct NetworkStats {
     pub success_rate: f64,
     pub average_response_time: u64, // milliseconds
 }
+
+// Send-safe error type
+#[derive(Debug, thiserror::Error)]
+pub enum BotError {
+    #[error("Network error: {0}")]
+    Network(String),
+    #[error("API error: {0}")]
+    Api(String),
+    #[error("Configuration error: {0}")]
+    Config(String),
+    #[error("Wallet error: {0}")]
+    Wallet(String),
+}
+
+// Safe conversion from anyhow::Error
+impl From<anyhow::Error> for BotError {
+    fn from(err: anyhow::Error) -> Self {
+        BotError::Api(err.to_string())
+    }
+}

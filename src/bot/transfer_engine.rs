@@ -15,9 +15,9 @@ pub struct TransferEngine {
 }
 
 impl TransferEngine {
-    pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new() -> Result<Self, BotError> {
         Ok(Self {
-            client: Arc::new(PiClient::new().await?),
+            client: Arc::new(PiClient::new().await.map_err(|e| BotError::Network(e.to_string()))?),
             retry_config: RetryStrategy::exponential_backoff(
                 Duration::from_millis(5), // Even faster for transfers
                 Duration::from_millis(50),
@@ -33,7 +33,7 @@ impl TransferEngine {
         wallet_seed: String,
         transfer_request: TransferRequest,
         log_sender: broadcast::Sender<LogEntry>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), BotError> {
         use std::sync::atomic::Ordering;
         
         self.is_active.store(true, Ordering::SeqCst);
@@ -115,7 +115,7 @@ impl TransferEngine {
         Ok(())
     }
 
-    async fn calculate_optimal_fee(&self, request: &TransferRequest) -> Result<u64, Box<dyn std::error::Error>> {
+    async fn calculate_optimal_fee(&self, _request: &TransferRequest) -> Result<u64, BotError> {
         // Use higher fees than competitors to ensure priority
         let base_fee = 3200000; // Competitor's fee
         let priority_multiplier = 1.5; // 50% higher for priority
@@ -132,7 +132,7 @@ impl TransferEngine {
         retry_config: RetryStrategy,
         is_active: Arc<AtomicBool>,
         worker_id: usize,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), BotError> {
         use std::sync::atomic::Ordering;
         
         let mut attempts = 0;
@@ -163,7 +163,7 @@ impl TransferEngine {
                             level: "ERROR".to_string(),
                             message: format!("❌ Worker {} - Max attempts reached: {}", worker_id, e),
                         });
-                        return Err(e.into());
+                        return Err(BotError::Api(e.to_string()));
                     }
 
                     // Ultra-fast retry for transfers

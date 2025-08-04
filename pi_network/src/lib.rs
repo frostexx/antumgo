@@ -1,4 +1,4 @@
-use reqwest::{Client, Response};
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use thiserror::Error;
@@ -76,8 +76,8 @@ impl PiClient {
 
     pub async fn claim_with_sponsor_fee(
         &self,
-        wallet_seed: &str,
-        sponsor_seed: &str,
+        _wallet_seed: &str,
+        _sponsor_seed: &str,
     ) -> Result<ClaimResult, PiError> {
         // Implementation for claiming with sponsor paying the fee
         let mut attempts = 0;
@@ -85,7 +85,7 @@ impl PiClient {
         loop {
             attempts += 1;
             
-            match self.attempt_claim_with_sponsor(wallet_seed, sponsor_seed).await {
+            match self.attempt_claim_with_sponsor(_wallet_seed, _sponsor_seed).await {
                 Ok(result) => return Ok(result),
                 Err(e) if attempts >= self.max_retries => return Err(e),
                 Err(PiError::RateLimit) => {
@@ -102,8 +102,8 @@ impl PiClient {
 
     async fn attempt_claim_with_sponsor(
         &self,
-        wallet_seed: &str,
-        sponsor_seed: &str,
+        _wallet_seed: &str,
+        _sponsor_seed: &str,
     ) -> Result<ClaimResult, PiError> {
         // This would implement the actual claiming logic
         // where the sponsor pays the transaction fee
@@ -121,7 +121,7 @@ impl PiClient {
 
     pub async fn transfer(
         &self,
-        wallet_seed: &str,
+        _wallet_seed: &str,
         request: &TransferRequest,
     ) -> Result<TransferResult, PiError> {
         let mut attempts = 0;
@@ -129,7 +129,7 @@ impl PiClient {
         loop {
             attempts += 1;
             
-            match self.attempt_transfer(wallet_seed, request).await {
+            match self.attempt_transfer(_wallet_seed, request).await {
                 Ok(result) => return Ok(result),
                 Err(e) if attempts >= self.max_retries => return Err(e),
                 Err(PiError::RateLimit) => {
@@ -146,7 +146,7 @@ impl PiClient {
 
     async fn attempt_transfer(
         &self,
-        wallet_seed: &str,
+        _wallet_seed: &str,
         request: &TransferRequest,
     ) -> Result<TransferResult, PiError> {
         // This would implement the actual transfer logic
@@ -162,7 +162,7 @@ impl PiClient {
         })
     }
 
-    pub async fn get_balance(&self, wallet_seed: &str) -> Result<BalanceInfo, PiError> {
+    pub async fn get_balance(&self, _wallet_seed: &str) -> Result<BalanceInfo, PiError> {
         // Implementation for getting wallet balance
         sleep(Duration::from_millis(1)).await;
         

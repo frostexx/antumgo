@@ -21,6 +21,7 @@ base64 = "0.22.1"
 
 # Enhanced dependencies (additions for superior performance)
 tokio-tungstenite = "0.20"
+tokio-stream = "0.1"  # ADDED - missing dependency
 futures-util = "0.3"
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }

