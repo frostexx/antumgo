@@ -49,23 +49,40 @@ func IsValidStellarAddress(address string) bool {
 	return err == nil
 }
 
-// Enhanced timing utilities - Fixed for newer Stellar SDK
+// Enhanced timing utilities - Fixed for current Stellar SDK
 func ExtractClaimableTime(predicate xdr.ClaimPredicate) (time.Time, bool) {
 	switch predicate.Type {
 	case xdr.ClaimPredicateTypeClaimPredicateUnconditional:
 		return time.Now(), true
 	case xdr.ClaimPredicateTypeClaimPredicateBeforeAbsoluteTime:
-		// Fixed: Use predicate.BeforeAbsoluteTime for newer SDK
-		if predicate.BeforeAbsoluteTime == nil {
+		// Correct field name for current SDK
+		if predicate.AbsBefore == nil {
 			return time.Time{}, false
 		}
-		return time.Unix(int64(*predicate.BeforeAbsoluteTime), 0), true
+		return time.Unix(int64(*predicate.AbsBefore), 0), true
 	case xdr.ClaimPredicateTypeClaimPredicateBeforeRelativeTime:
-		// Fixed: Use predicate.BeforeRelativeTime for newer SDK
-		if predicate.BeforeRelativeTime == nil {
+		// Correct field name for current SDK
+		if predicate.RelBefore == nil {
 			return time.Time{}, false
 		}
-		return time.Now().Add(time.Duration(*predicate.BeforeRelativeTime) * time.Second), true
+		return time.Now().Add(time.Duration(*predicate.RelBefore) * time.Second), true
+	case xdr.ClaimPredicateTypeClaimPredicateAnd:
+		// Handle AND predicate
+		if predicate.AndPredicates != nil && len(*predicate.AndPredicates) > 0 {
+			// Return the time from the first predicate
+			return ExtractClaimableTime((*predicate.AndPredicates)[0])
+		}
+	case xdr.ClaimPredicateTypeClaimPredicateOr:
+		// Handle OR predicate
+		if predicate.OrPredicates != nil && len(*predicate.OrPredicates) > 0 {
+			// Return the time from the first predicate
+			return ExtractClaimableTime((*predicate.OrPredicates)[0])
+		}
+	case xdr.ClaimPredicateTypeClaimPredicateNot:
+		// Handle NOT predicate
+		if predicate.NotPredicate != nil {
+			return ExtractClaimableTime(*predicate.NotPredicate)
+		}
 	}
 	return time.Time{}, false
 }

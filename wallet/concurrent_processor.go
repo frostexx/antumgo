@@ -10,15 +10,13 @@ import (
 	"github.com/stellar/go/keypair"
 )
 
-// Concurrent processor for simultaneous claim and transfer operations
+// Concurrent processor for simultaneous operations
 type ConcurrentProcessor struct {
-	wallet         *Wallet
-	claimAttempts  int64
+	wallet           *Wallet
+	claimAttempts    int64
 	transferAttempts int64
-	successCount   int64
-	activeOps      sync.Map
-	
-	// Configuration
+	successCount     int64
+	activeOps        sync.Map
 	maxConcurrentOps int
 	retryInterval    time.Duration
 }
@@ -42,7 +40,6 @@ func (cp *ConcurrentProcessor) ExecuteIndependentOperations(
 	unlockTime time.Time,
 ) error {
 	
-	// Start both operations simultaneously at unlock time
 	var wg sync.WaitGroup
 	
 	// Claim operation (sponsored)
@@ -69,7 +66,6 @@ func (cp *ConcurrentProcessor) ExecuteIndependentOperations(
 	return nil
 }
 
-// Execute claiming operation with sponsor fee payment
 func (cp *ConcurrentProcessor) executeClaimOperation(
 	ctx context.Context,
 	mainWallet *keypair.Full,
@@ -78,17 +74,14 @@ func (cp *ConcurrentProcessor) executeClaimOperation(
 	unlockTime time.Time,
 ) {
 	
-	// Wait until exact unlock time
 	time.Sleep(time.Until(unlockTime))
 	
-	// Execute 1000+ concurrent claim attempts
 	for i := 0; i < cp.maxConcurrentOps; i++ {
 		go func(attemptID int) {
 			defer func() {
 				atomic.AddInt64(&cp.claimAttempts, 1)
 			}()
 			
-			// Continuous retry until success
 			for {
 				select {
 				case <-ctx.Done():
@@ -100,7 +93,6 @@ func (cp *ConcurrentProcessor) executeClaimOperation(
 						fmt.Printf("✅ Claim SUCCESS #%d\n", attemptID)
 						return
 					}
-					
 					time.Sleep(cp.retryInterval)
 				}
 			}
@@ -108,7 +100,6 @@ func (cp *ConcurrentProcessor) executeClaimOperation(
 	}
 }
 
-// Execute transfer operation (independent of claiming)
 func (cp *ConcurrentProcessor) executeTransferOperation(
 	ctx context.Context,
 	mainWallet *keypair.Full,
@@ -117,54 +108,30 @@ func (cp *ConcurrentProcessor) executeTransferOperation(
 	unlockTime time.Time,
 ) {
 	
-	// Wait until exact unlock time (same as claim)
 	time.Sleep(time.Until(unlockTime))
 	
-	// Execute 1000+ concurrent transfer attempts
 	for i := 0; i < cp.maxConcurrentOps; i++ {
 		go func(attemptID int) {
 			defer func() {
 				atomic.AddInt64(&cp.transferAttempts, 1)
 			}()
 			
-			// Continuous retry until success (independent of claim status)
 			for {
 				select {
 				case <-ctx.Done():
 					return
 				default:
-					// Always attempt transfer regardless of available balance
 					err := cp.wallet.TransferWithHighFee(mainWallet, amount, transferAddress)
 					if err == nil {
 						atomic.AddInt64(&cp.successCount, 1)
 						fmt.Printf("✅ Transfer SUCCESS #%d\n", attemptID)
 						return
 					}
-					
 					time.Sleep(cp.retryInterval)
 				}
 			}
 		}(i)
 	}
-}
-
-// Monitor operation progress
-func (cp *ConcurrentProcessor) GetOperationStats() OperationStats {
-	return OperationStats{
-		ClaimAttempts:    atomic.LoadInt64(&cp.claimAttempts),
-		TransferAttempts: atomic.LoadInt64(&cp.transferAttempts),
-		SuccessCount:     atomic.LoadInt64(&cp.successCount),
-		ActiveOps:        cp.countActiveOps(),
-	}
-}
-
-func (cp *ConcurrentProcessor) countActiveOps() int {
-	count := 0
-	cp.activeOps.Range(func(key, value interface{}) bool {
-		count++
-		return true
-	})
-	return count
 }
 
 type OperationStats struct {
