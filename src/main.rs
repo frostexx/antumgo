@@ -1,21 +1,18 @@
 use axum::{
-    extract::State,
-    http::StatusCode,
     response::Html,
     routing::{get, post},
-    Json, Router,
+    Router,
 };
 use chrono::{DateTime, Utc};
 use dashmap::DashMap;
 use parking_lot::RwLock;
-use serde::{Deserialize, Serialize};
 use std::{
     sync::{atomic::AtomicBool, Arc},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
-use tokio::{sync::broadcast, time::sleep};
+use tokio::sync::broadcast;
 use tower_http::{cors::CorsLayer, services::ServeDir};
-use tracing::{error, info, warn};
+use tracing::info;
 
 mod api;
 mod bot;
@@ -24,7 +21,7 @@ mod utils;
 
 use bot::{claiming_engine::ClaimingEngine, transfer_engine::TransferEngine};
 use models::types::*;
-use utils::{rate_limiter::RateLimiter, retry::RetryConfig};
+use utils::rate_limiter::RateLimiter;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -40,7 +37,8 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::init();
+    // Initialize tracing with fmt subscriber
+    tracing_subscriber::fmt::init();
     
     let (log_sender, _) = broadcast::channel(1000);
     
