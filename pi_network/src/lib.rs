@@ -2,8 +2,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use thiserror::Error;
-use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signature};
-use bip39::{Mnemonic, Language, Seed}; // Use bip39 instead of tiny-bip39
+use ed25519_dalek::{Keypair, PublicKey, SecretKey}; // Remove unused Signature
+use bip39::{Mnemonic, Language}; // Remove Seed - it's not exported in bip39 v1.0
 use sha2::{Digest, Sha256};
 use bs58;
 
@@ -81,13 +81,20 @@ impl PiClient {
         })
     }
 
-    // Convert seed phrase to Pi Network address using compatible bip39
+    // Convert seed phrase to Pi Network address using correct bip39 API
     fn seed_to_address(&self, seed_phrase: &str) -> Result<String, PiError> {
+        // Parse mnemonic using bip39 v1.0 API
         let mnemonic = Mnemonic::parse_in_normalized(Language::English, seed_phrase)
             .map_err(|_| PiError::InvalidSeedPhrase)?;
         
-        let seed = Seed::new(&mnemonic, "");
-        let secret_key = SecretKey::from_bytes(seed.as_bytes()[..32].try_into().unwrap())
+        // Generate seed from mnemonic (bip39 v1.0 uses to_seed method)
+        let seed = mnemonic.to_seed("");
+        
+        // Create secret key from first 32 bytes of seed
+        let secret_key_bytes: [u8; 32] = seed[..32].try_into()
+            .map_err(|_| PiError::Crypto("Invalid seed length".to_string()))?;
+        
+        let secret_key = SecretKey::from_bytes(&secret_key_bytes)
             .map_err(|e| PiError::Crypto(e.to_string()))?;
         
         let public_key = PublicKey::from(&secret_key);
@@ -118,7 +125,8 @@ impl PiClient {
                             .and_then(|s| s.parse::<u64>().ok())
                             .unwrap_or(0);
                         
-                        let locked_balances = balance_data["locked"]
+                        // Fix: Add explicit type annotation for locked_balances
+                        let locked_balances: Vec<LockedBalance> = balance_data["locked"]
                             .as_array()
                             .map(|arr| {
                                 arr.iter().filter_map(|item| {
